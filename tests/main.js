@@ -2815,3 +2815,25 @@ testMany('None bundler emits esm with default nodeVersion', ['bundler_none'], as
 
   t.is(originalFile, bundledFile)
 })
+
+testMany('All ESM bundlers can handle import loops', ['bundler_esbuild', 'bundler_nft'], async (options, t) => {
+  const fixtureName = 'node-esm-import-loop'
+  const opts = merge(options, {
+    basePath: join(FIXTURES_DIR, fixtureName),
+    config: {
+      '*': {
+        nodeVersion: 'nodejs16.x',
+      },
+    },
+  })
+  const { files, tmpDir } = await zipFixture(t, `${fixtureName}/functions`, {
+    length: 1,
+    opts,
+  })
+
+  await unzipFiles(files)
+
+  const func = await importFunctionFile(join(tmpDir, 'func1.js'))
+
+  t.is(func.handler(), true)
+})
